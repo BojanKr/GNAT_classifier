@@ -44,15 +44,16 @@ class kNN:
         self.y_train = y
 
 
-    def predict(self, X, job_name):
+    def predict(self, X, output):
 
         print('prediciting')
-        pred_labels = [self._predict(x=x, job_name=job_name) for x in SeqIO.parse(X, 'fasta')]
+        print(output)
+        pred_labels = [self._predict(x=x, output=output) for x in SeqIO.parse(X, 'fasta')]
 
         return pred_labels
 
 
-    def _predict(self, x, job_name):
+    def _predict(self, x, output):
 
         # Create a temporary query seqeunce file
         tmp_seq = os.path.join(os.path.dirname(os.getcwd()), 'tmp_seq.txt')
@@ -63,10 +64,13 @@ class kNN:
         # Before running BLAST check if the sequence contains the GNAT fold (by scanning PROSITE)
         if self._scan_prosite(x) == 'GNAT':
             # Calculate similarity between sequences using BLAST
-            output = os.path.join(os.path.dirname(os.getcwd()), 'results', job_name, str(x.name.split('|')[1]) + '.xml')
+            #output = os.path.join(os.path.dirname(os.getcwd()), 'results', job_name, str(x.name.split('|')[1]) + '.xml')
             print('Running BLAST')
-            scores = blast(sequence=tmp_seq, database=database, out=output)
-            print(f'BLAST results for {str(x.name.split("|")[1])} written to {output}')
+
+            blast_output = os.path.join(output, 'BLAST_results', str(x.name.split('|')[1]) + '.xml')
+
+            scores = blast(sequence=tmp_seq, database=database, out=blast_output)
+            print(f'BLAST results for {str(x.name.split("|")[1])} written to {blast_output}')
 
             # Get labels of k nearest neighbors
             print('Counting k neighbours')
